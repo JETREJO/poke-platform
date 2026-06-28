@@ -1,5 +1,3 @@
-use pokeplatform;
-
 CREATE TABLE pokemon_type (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE

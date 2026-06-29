@@ -8,13 +8,13 @@ import (
 
 // Este es el Struct de nuestro handler
 type Handler struct {
-	repository *Repository
+	service *Service
 }
 
 // Este es el constructor.
-func NewHandler(repository *Repository) *Handler {
+func NewHandler(service *Service) *Handler {
 	return &Handler{
-		repository: repository,
+		service: service,
 	}
 }
 
@@ -27,7 +27,7 @@ func NewHandler(repository *Repository) *Handler {
 // cosas como params, headers, body, cookies, etc.
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 
-	pokemons, err := h.repository.GetAll()
+	pokemons, err := h.service.GetAll()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -37,10 +37,19 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	// Header para indicar que vamos a devolver un JSON
 	w.Header().Set("Content-Type", "application/json")
 
-	// El enconder transoforma todo para devolverlo listo en la respuesta.
-	// Esto nos evita:
-	// - Recorrer el Slice
-	// - Construir el JSON
-	// - Convertir strings
-	json.NewEncoder(w).Encode(pokemons)
+	// // El enconder transoforma todo para devolverlo listo en la respuesta.
+	// // Esto nos evita:
+	// // - Recorrer el Slice
+	// // - Construir el JSON
+	// // - Convertir strings
+	// json.NewEncoder(w).Encode(pokemons)
+
+	err = json.NewEncoder(w).Encode(pokemons)
+
+	// Agregamos esta validación ya que 'Encode' también puede fallar, es raro
+	// pero no es imposible. Por precaución y buena práctica, hay que validar
+	// errores en todos los posibles fallos.
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

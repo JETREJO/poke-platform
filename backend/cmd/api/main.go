@@ -25,8 +25,12 @@ func main() {
 	// Creamos una instancia de nuestro "repository"
 	repository := pokemon.NewRepository(conn)
 
+	// Creamos una instancia para el service
+	service := pokemon.NewService(repository)
+
 	// Creamos una instancia de nuestro Handler
-	handler := pokemon.NewHandler(repository)
+	// Ahora el Handler ya no se conecta directo al Repository, sino al Service
+	handler := pokemon.NewHandler(service)
 
 	// Con esto le indicamos al servidor que:
 	// "Cuando llegue una petición GET a 'pokemon/', ejecuta la función handler.GetAll()"

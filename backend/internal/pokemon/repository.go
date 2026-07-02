@@ -120,7 +120,7 @@ func (r *Repository) GetAll() ([]Pokemon, error) {
 	return pokemonsList, nil
 }
 
-func (r *Repository) Create(request CreatePokemonRequest) (Pokemon, error) {
+func (r *Repository) Create(request Pokemon) (Pokemon, error) {
 
 	query := `
 		INSERT INTO pokemon (
@@ -142,23 +142,16 @@ func (r *Repository) Create(request CreatePokemonRequest) (Pokemon, error) {
 
 	var pokemon Pokemon
 
-	pokemon.Name = request.Name
-	pokemon.PrimaryTypeID = request.PrimaryTypeID
-	pokemon.SecondaryTypeID = request.SecondaryTypeID
-	pokemon.GenerationID = request.GenerationID
-	pokemon.Sprite = request.Sprite
-	pokemon.Shiny = request.Shiny
-
 	// QueryRow() ejecuta la consulta a la base de datos.
 	err := r.db.QueryRow(
 		context.Background(),
 		query,
-		request.Name,
-		request.PrimaryTypeID,
-		request.SecondaryTypeID,
-		request.GenerationID,
-		request.Sprite,
-		request.Shiny,
+		pokemon.Name,
+		pokemon.PrimaryTypeID,
+		pokemon.SecondaryTypeID,
+		pokemon.GenerationID,
+		pokemon.Sprite,
+		pokemon.Shiny,
 	).Scan(&pokemon.ID)
 	// - Scan aquí está ESCRIBIENDO el valor recibido del RETURNING de la query
 	//   que ejecutamos en postgres, y lo está escribiendo en la direccón de
@@ -170,12 +163,12 @@ func (r *Repository) Create(request CreatePokemonRequest) (Pokemon, error) {
 	// returnedRow := r.db.QueryRow(
 	// 	context.Background(),
 	// 	query,
-	// 	request.Name,
-	// 	request.PrimaryTypeID,
-	// 	request.SecondaryTypeID,
-	// 	request.GenerationID,
-	// 	request.Sprite,
-	// 	request.Shiny,
+	// 	pokemon.Name,
+	// 	pokemon.PrimaryTypeID,
+	// 	pokemon.SecondaryTypeID,
+	// 	pokemon.GenerationID,
+	// 	pokemon.Sprite,
+	// 	pokemon.Shiny,
 	// )
 	// err := returnedRow.Scan(&pokemon.ID)
 

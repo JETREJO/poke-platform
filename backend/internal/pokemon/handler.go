@@ -52,6 +52,8 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// El HANDLER no es una función que devuelva datos, envía directo la respuesta  al cliente.
+// La respuesta del Handler viene en "W" -> HttpResponseWriter
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var request CreatePokemonRequest // El tipo viene del DTO
@@ -72,12 +74,35 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Invocamos al método Create() del Service
+	pokemon, err := h.service.Create(request)
+
+	// Retornamos un error del servidor en caso de que la query no se haya
+	// ejecutado correctamente.
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Seteamos los headers a la respuesta que vamos a enviar.
 	w.Header().Set("Content-Type", "application/json")
+	// - Este seta el status de creado (201 Created).
+	// - Si no se hace esto, Go responde autompaticamente con un '200 OK'
+	// - Siempre escribir el 'WriteHeader' primero antes que el body, ya que
+	//   una vez que se empieza a escribir el body, el código HTTP ya no
+	//   puede cambiar. Esto es un detalle de Go.
+	w.WriteHeader(http.StatusCreated)
 
 	// Esto es lo que regreso de la función.
-	// Solo regreso el mismo JSON codificado nuevamente (de momento).
-	err = json.NewEncoder(w).Encode(request)
+	// - Todo lo que se 'escriba' en nuestra variable 'w' será lo que se
+	//   envíe DIRECTO al cliente. Esta función no retorna datos, se comunica
+	//   directo con el cliente conforme lo que le escribamos en 'w'.
+	// - Regresamos el Pokemon creado en formato JSON.
+	err = json.NewEncoder(w).Encode(pokemon)
 
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// }
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

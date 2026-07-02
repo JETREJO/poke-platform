@@ -119,3 +119,76 @@ func (r *Repository) GetAll() ([]Pokemon, error) {
 
 	return pokemonsList, nil
 }
+
+func (r *Repository) Create(request CreatePokemonRequest) (Pokemon, error) {
+
+	query := `
+		INSERT INTO pokemon (
+			name,
+			primary_type_id,
+			secondary_type_id,
+			generation_id,
+			sprite,
+			shiny
+		)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id;
+	`
+
+	// La cláusula RETURNING en PostgreSQL permite obtener datos inmediatamente
+	// después de haber ejecutado operaciones INSERT, UPDATE o DELETE. Evita hacer
+	// consultas adicionales a la base de datos para saber qué registros fueron
+	// afectados.
+
+	var pokemon Pokemon
+
+	pokemon.Name = request.Name
+	pokemon.PrimaryTypeID = request.PrimaryTypeID
+	pokemon.SecondaryTypeID = request.SecondaryTypeID
+	pokemon.GenerationID = request.GenerationID
+	pokemon.Sprite = request.Sprite
+	pokemon.Shiny = request.Shiny
+
+	// QueryRow() ejecuta la consulta a la base de datos.
+	err := r.db.QueryRow(
+		context.Background(),
+		query,
+		request.Name,
+		request.PrimaryTypeID,
+		request.SecondaryTypeID,
+		request.GenerationID,
+		request.Sprite,
+		request.Shiny,
+	).Scan(&pokemon.ID)
+	// - Scan aquí está ESCRIBIENDO el valor recibido del RETURNING de la query
+	//   que ejecutamos en postgres, y lo está escribiendo en la direccón de
+	//   memoria de nuestra variable pokemon, en el campo ID.
+	// - Si eliminamos la parte de Scan(), en la respuesta solo enviaríamos
+	//   la información que recibimos del pokemon sin su ID.
+
+	// -> Esto se puede ver también como:
+	// returnedRow := r.db.QueryRow(
+	// 	context.Background(),
+	// 	query,
+	// 	request.Name,
+	// 	request.PrimaryTypeID,
+	// 	request.SecondaryTypeID,
+	// 	request.GenerationID,
+	// 	request.Sprite,
+	// 	request.Shiny,
+	// )
+	// err := returnedRow.Scan(&pokemon.ID)
+
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	// Lo que regresa la función es:
+	// - Los datos que RECIBIMOS de la petición.
+	// - Más el ID que nos retornó la Query que ejecutamos para crear.
+	// - Es decir, no estamos haciendo una consulta a la base de datos
+	//   para regresar el pokemon creado, solo validamos si se creó
+	//   correctamente, y si sí, regresamos lo que recibimos más el ID
+	//   del regitro nuevo recién creado.
+	return pokemon, nil
+}

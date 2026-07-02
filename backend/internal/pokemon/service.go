@@ -14,3 +14,7 @@ func NewService(repository *Repository) *Service {
 func (s *Service) GetAll() ([]Pokemon, error) {
 	return s.repository.GetAll()
 }
+
+func (s *Service) Create(request CreatePokemonRequest) (Pokemon, error) {
+	return s.repository.Create(request)
+}

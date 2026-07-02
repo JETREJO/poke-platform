@@ -33,8 +33,10 @@ func main() {
 	handler := pokemon.NewHandler(service)
 
 	// Con esto le indicamos al servidor que:
-	// "Cuando llegue una petición GET a 'pokemon/', ejecuta la función handler.GetAll()"
+	// - "Cuando llegue una petición GET a 'pokemon/', ejecuta la función handler.GetAll()"
 	http.HandleFunc("GET /pokemon", handler.GetAll)
+	// - "Cuando llegue una petición POST a 'pokemon/', ejecuta la función handler.Create()"
+	http.HandleFunc("POST /pokemon", handler.Create)
 
 	log.Println("[MAIN] Server running on :8082")
 

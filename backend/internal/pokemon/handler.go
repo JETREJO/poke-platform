@@ -3,7 +3,9 @@ package pokemon
 // Importamos nuevas librerías
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 )
 
 // Este es el Struct de nuestro handler
@@ -103,6 +105,41 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	// if err != nil {
 	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
 	// }
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
+
+	// El param de una query siempre se va a recibir como String
+	idParam := r.PathValue("id")
+
+	// Como acá lo que recibimos es un id en número, lo convertimos a Integer
+	// - Atoi() valida que lo que le mandamos como param sea un número en String,
+	//   y si sí lo es, lo convierte a Integer.
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		http.Error(w, "Invalid pokemon id", http.StatusBadRequest)
+		return
+	}
+
+	pokemon, err := h.service.GetByID(id)
+	if err != nil {
+		// Valida el error que creamos nosotros en nuestro archivo
+		if errors.Is(err, ErrPokemonNotFound) {
+			// Escribimos el error de RECURSO NO ENCONTRADO
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		// En otro caso, regresamos un INTERNAL SERVER ERROR (500)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(pokemon)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

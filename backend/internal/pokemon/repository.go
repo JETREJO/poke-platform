@@ -4,6 +4,7 @@ package pokemon
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -159,19 +160,6 @@ func (r *Repository) Create(request Pokemon) (Pokemon, error) {
 	// - Si eliminamos la parte de Scan(), en la respuesta solo enviaríamos
 	//   la información que recibimos del pokemon sin su ID.
 
-	// -> Esto se puede ver también como:
-	// returnedRow := r.db.QueryRow(
-	// 	context.Background(),
-	// 	query,
-	// 	pokemon.Name,
-	// 	pokemon.PrimaryTypeID,
-	// 	pokemon.SecondaryTypeID,
-	// 	pokemon.GenerationID,
-	// 	pokemon.Sprite,
-	// 	pokemon.Shiny,
-	// )
-	// err := returnedRow.Scan(&pokemon.ID)
-
 	if err != nil {
 		return Pokemon{}, err
 	}
@@ -183,5 +171,47 @@ func (r *Repository) Create(request Pokemon) (Pokemon, error) {
 	//   para regresar el pokemon creado, solo validamos si se creó
 	//   correctamente, y si sí, regresamos lo que recibimos más el ID
 	//   del regitro nuevo recién creado.
+	return pokemon, nil
+}
+
+func (r *Repository) GetByID(id int) (Pokemon, error) {
+
+	query := `
+		SELECT
+			id,
+			name,
+			primary_type_id,
+			secondary_type_id,
+			generation_id,
+			sprite,
+			shiny
+		FROM pokemon
+		WHERE id = $1;
+	`
+
+	var pokemon Pokemon
+
+	err := r.db.QueryRow(
+		context.Background(),
+		query,
+		id,
+	).Scan(
+		&pokemon.ID,
+		&pokemon.Name,
+		&pokemon.PrimaryTypeID,
+		&pokemon.SecondaryTypeID,
+		&pokemon.GenerationID,
+		&pokemon.Sprite,
+		&pokemon.Shiny,
+	)
+
+	if err != nil {
+		// Is() revisa dentro de toda la cadena de errores para validar
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Pokemon{}, ErrPokemonNotFound
+		}
+		return Pokemon{}, err
+	}
+
 	return pokemon, nil
 }

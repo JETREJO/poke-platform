@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	internalHttp "pokemon-platform/backend/internal/http"
+
 	"pokemon-platform/backend/internal/database"
 	"pokemon-platform/backend/internal/pokemon"
 )
@@ -12,12 +14,11 @@ import (
 func main() {
 
 	conn, err := database.Connect()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Cierra la conexión a la vase de datos cuando termine la función
+	// Cierra la conexión a la base de datos cuando termine la función
 	defer conn.Close(context.Background())
 
 	log.Println("[MAIN] Database ready")
@@ -32,19 +33,9 @@ func main() {
 	// Ahora el Handler ya no se conecta directo al Repository, sino al Service
 	handler := pokemon.NewHandler(service)
 
-	// Con esto le indicamos al servidor que:
-	// - "Cuando llegue una petición GET a 'pokemon/', ejecuta la función handler.GetAll()"
-	http.HandleFunc("GET /pokemon", handler.GetAll)
-	// - "Cuando llegue una petición POST a 'pokemon/', ejecuta la función handler.Create()"
-	http.HandleFunc("POST /pokemon", handler.Create)
+	router := internalHttp.NewRouter(handler)
 
 	log.Println("[MAIN] Server running on :8082")
-
-	// // Ejecutamos el método GetAll() de nuestro repository
-	// pokemons, err := repository.GetAll()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	// // log.Printf("Found %d pokemon(s): ", len(pokemons))
 
@@ -72,10 +63,8 @@ func main() {
 	//
 	// 2. La función "ListenAndService" espera dos parámetros:
 	// - El puerto a abrir
-	// - El 'router' a utilizar
-	//   Dejamos este segundo en NIL porque no queremos usa ninguno
-	//   específico de momento. Después lo vamos a cambiar.
-	err = http.ListenAndServe(":8082", nil)
+	// - El 'router' a utilizar. En este caso  es el que creamos en la carpeta 'internal/http'
+	err = http.ListenAndServe(":8082", router)
 	if err != nil {
 		log.Fatal(err)
 	}

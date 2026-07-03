@@ -144,3 +144,44 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+
+	// Pasamos el ID de String a Integer
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Invalid pokemon id", http.StatusBadRequest)
+		return
+	}
+
+	// Este Struct viene del DTO
+	var request UpdatePokemonRequest
+
+	// Decodificamos el body a JSON para validar formato correcto.
+	err = json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	pokemon, err := h.service.Update(id, request)
+	// El manejo de errores de la consulta se hace aquí.
+	if err != nil {
+		// Caso 1: El pokemon con el ID recibido no existe
+		if errors.Is(err, ErrPokemonNotFound) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		// Caso 2: Ocurrió un error desconocido.
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	// Regresamos el resultado de la Query codificado.
+	err = json.NewEncoder(w).Encode(pokemon)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

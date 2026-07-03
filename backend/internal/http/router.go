@@ -18,6 +18,7 @@ func NewRouter(pokemonHandler *pokemon.Handler) *http.ServeMux {
 	router.HandleFunc("GET /pokemon", pokemonHandler.GetAll)
 	router.HandleFunc("GET /pokemon/{id}", pokemonHandler.GetByID)
 	router.HandleFunc("POST /pokemon", pokemonHandler.Create)
+	router.HandleFunc("PUT /pokemon/{id}", pokemonHandler.Update)
 
 	return router
 }

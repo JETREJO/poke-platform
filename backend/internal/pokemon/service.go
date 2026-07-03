@@ -11,9 +11,21 @@ func NewService(repository *Repository) *Service {
 	}
 }
 
+/*
+ * ----------------------------------------------------------
+ *          GET ALL POKEMONS
+ * ----------------------------------------------------------
+ */
+
 func (s *Service) GetAll() ([]Pokemon, error) {
 	return s.repository.GetAll()
 }
+
+/*
+ * ----------------------------------------------------------
+ *          CREATE ONE POKEMON
+ * ----------------------------------------------------------
+ */
 
 func (s *Service) Create(request CreatePokemonRequest) (Pokemon, error) {
 	// A esta asignación se le llama: 'COMPOSITE LITERAL'
@@ -35,6 +47,43 @@ func (s *Service) Create(request CreatePokemonRequest) (Pokemon, error) {
 	return s.repository.Create(pokemon)
 }
 
+/*
+ * ----------------------------------------------------------
+ *          SEARCH ONE POKEMON BY ID
+ * ----------------------------------------------------------
+ */
+
 func (s *Service) GetByID(id int) (Pokemon, error) {
 	return s.repository.GetByID(id)
+}
+
+/*
+ * ----------------------------------------------------------
+ *          UPDATE ONE POKEMON
+ * ----------------------------------------------------------
+ */
+
+func (s *Service) Update(id int, request UpdatePokemonRequest) (Pokemon, error) {
+
+	// Usamos la función de GetById() primero para obtener
+	// los datos del pokemon que vamos a actualizar, esto con el
+	// fin de saber si el pokemon EXISTE o NO.
+	pokemon, err := s.repository.GetByID(id)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	pokemon.Name = request.Name
+	pokemon.PrimaryTypeID = request.PrimaryTypeID
+	pokemon.SecondaryTypeID = request.SecondaryTypeID
+	pokemon.GenerationID = request.GenerationID
+	pokemon.Sprite = request.Sprite
+	pokemon.Shiny = request.Shiny
+
+	err = s.repository.Update(pokemon)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	return pokemon, nil
 }

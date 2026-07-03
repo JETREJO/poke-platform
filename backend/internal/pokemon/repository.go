@@ -215,3 +215,36 @@ func (r *Repository) GetByID(id int) (Pokemon, error) {
 
 	return pokemon, nil
 }
+
+func (r *Repository) Update(pokemon Pokemon) error {
+
+	query := `
+		UPDATE pokemon
+		SET
+			name = $1,
+			primary_type_id = $2,
+			secondary_type_id = $3,
+			generation_id = $4,
+			sprite = $5,
+			shiny = $6
+		WHERE id = $7;
+	`
+	// - La función 'Exec()' se usa cuando queremos ejecutar una
+	// query que NO DEVUELVE DATOS.
+	// - La función 'Exec()' devuelve un 'CommandTag' que contiene
+	// el número de filas afectadas, pero como en este caso no vamos
+	// a usar esa información, por eso usamos el guion bajo.
+	_, err := r.db.Exec(
+		context.Background(),
+		query,
+		pokemon.Name,
+		pokemon.PrimaryTypeID,
+		pokemon.SecondaryTypeID,
+		pokemon.GenerationID,
+		pokemon.Sprite,
+		pokemon.Shiny,
+		pokemon.ID,
+	)
+
+	return err
+}

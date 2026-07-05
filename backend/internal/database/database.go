@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"pokemon-platform/backend/config"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -10,7 +11,7 @@ import (
 func Connect() (*pgx.Conn, error) {
 	conn, err := pgx.Connect(
 		context.Background(),
-		"postgres://pokemon:pokemon@localhost:5432/pokemon?sslmode=disable",
+		config.App.DatabaseURL,
 	)
 
 	if err != nil {

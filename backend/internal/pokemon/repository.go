@@ -248,3 +248,20 @@ func (r *Repository) Update(pokemon Pokemon) error {
 
 	return err
 }
+
+func (r *Repository) Delete(id int) error {
+
+	query := `
+		DELETE
+		FROM pokemon
+		WHERE id = $1;
+	`
+
+	_, err := r.db.Exec(
+		context.Background(),
+		query,
+		id,
+	)
+
+	return err
+}

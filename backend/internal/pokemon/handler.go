@@ -185,3 +185,28 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+
+	// Mimsma lógica que en el Update, pasamos el ID de String a Integer
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Invalid pokemon id", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.Delete(id)
+	if err != nil {
+
+		if errors.Is(err, ErrPokemonNotFound) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Solo regresamos el códilo del Status
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -87,3 +87,20 @@ func (s *Service) Update(id int, request UpdatePokemonRequest) (Pokemon, error) 
 
 	return pokemon, nil
 }
+
+/*
+ * ----------------------------------------------------------
+ *          DELETE ONE POKEMON
+ * ----------------------------------------------------------
+ */
+
+func (s *Service) Delete(id int) error {
+
+	_, err := s.repository.GetByID(id)
+
+	if err != nil {
+		return err
+	}
+
+	return s.repository.Delete(id)
+}
